@@ -89,6 +89,18 @@ For detailed info about the logic and usage patterns of Example42 modules check 
 
         $nagios_check_disks_nrpe_cfg = 'example42/nagios/nrpe_cfg/nrpe-check_disk.cfg.erb'  <--- Place at top of site.pp
 
+## USAGE - Enable External Graphing
+* Enable pnp4nagios integration
+
+        class { 'pnp4nagios': }
+
+        class { 'nagios':
+          enablepnp    => true,
+          template     => 'pnp4nagios/nagios/nagios.cfg.erb',
+          template_cgi => 'pnp4nagios/nagios/cgi.cfg',
+          settings_template => 'pnp4nagios/nagios/settings/template.cfg',
+          commands_special  => 'pnp4nagios/nagios/commands/special.cfg',
+        }
 
 ## USAGE - Example42 extensions management 
 * Activate puppi (recommended, but disabled by default)

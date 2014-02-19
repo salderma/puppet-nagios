@@ -1,5 +1,5 @@
 name 'example42-nagios'
-version '2.0.14'
+version '2.0.13'
 
 author 'Alessandro Franceschi'
 license 'Apache2'
@@ -12,4 +12,4 @@ dependency 'example42/monitor', '>=2.0.0'
 dependency 'example42/nrpe', '>=2.0.0'
 dependency 'example42/firewall', '>=2.0.0'
 dependency 'example42/apache', '>=2.0.0'
-dependency 'puppetlabs/concat', '>=0.0.1'
+dependency 'ripienaar/concat', '>=0.0.1'

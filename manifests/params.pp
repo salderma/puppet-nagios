@@ -14,9 +14,6 @@
 #
 class nagios::params {
 
-  $manual_dir_source = undef
-  $manual_dir_purge = false
-
   $install_prerequisites = true
 
   # Default nagiosadmin password is 'example42'
@@ -171,6 +168,11 @@ class nagios::params {
     default                   => '/var/log/nagios/nagios.log',
   }
 
+  $config_cgi_file = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/nagios3/cgi.cfg',
+    default                   => '/etc/nagios/cgi.cfg',
+  }
+
   # General Settings
   $my_class = ''
   $source = ''
@@ -183,6 +185,13 @@ class nagios::params {
   $absent = false
   $disable = false
   $disableboot = false
+  $enablepnp = false
+  $template_cgi = ''
+  $settings_template = 'nagios/settings/templates.cfg'
+  $settings_timeperiods = 'nagios/settings/timeperiods.cfg'
+  $commands_special = 'nagios/commands/special.cfg'
+  $commands_general = 'nagios/commands/general.cfg'
+  $commands_extra = 'nagios/commands/extra.cfg'
 
   ### General module variables that can have a site or per module default
   $monitor = false

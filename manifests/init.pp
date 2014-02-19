@@ -7,15 +7,6 @@
 #
 # Module specific parameters
 #
-# [*manual_dir_source*]
-#   If defined, the /etc/nagios/auto.d/manual directory is built
-#   recursively from the specified source
-#
-# [*manual_dir_purge*]
-#   If set to true (default false) the any existing file on 
-#   /etc/nagios/auto.d/manual not present on the source
-#   path specified in manual_dir_source is deleted
-#
 # [*install_prerequisites*]
 #
 # [*nagiosadmin_password*]
@@ -208,6 +199,27 @@
 # [*log_file*]
 #   Log file(s). Used by puppi
 #
+# [*enablepnp*]
+#   Set to True to enable integration with pnp4nagios
+#
+# [*template_cgi*]
+#   Template for Nagios cgi.cfg.  This is used with $enablepnp=true to all pnp4nagios content inside the nagios frame.
+#
+# [*settings_template*]
+#   Template file for Nagios templates.cfg.  This is used with $enablepnp=true to add the pnp4nagios action_url to the host and service templates.
+#
+# [*settings_timeperiods*]
+#   Template file for Nagios timeperiods.cfg.  This is not currently, added for consistency of auto.d templates.
+#
+# [*commands_general*]
+#   Template file for general commands.  This is not currently, added for consistency of auto.d templates.
+#
+# [*commands_extra*]
+#   Template file for extra commands.  This is not currently, added for consistency of auto.d templates.
+#
+# [*commands_special*]
+#   Template file for special commands.  This is used with $enablepnp=true to configure the pnp4nagios performance data collection commands
+#
 #
 # == Examples
 #
@@ -223,8 +235,6 @@
 #
 class nagios (
   # $grouplogic            = params_lookup( 'grouplogic' ),
-  $manual_dir_source       = params_lookup('manual_dir_source'),
-  $manual_dir_purge        = params_lookup('manual_dir_purge'),
   $install_prerequisites   = params_lookup('install_prerequisites'),
   $nagiosadmin_password    = params_lookup('nagiosadmin_password'),
   $nagiosadmin_email       = params_lookup('nagiosadmin_email'),
@@ -274,7 +284,14 @@ class nagios (
   $pid_file                = params_lookup( 'pid_file' ),
   $data_dir                = params_lookup( 'data_dir' ),
   $log_dir                 = params_lookup( 'log_dir' ),
-  $log_file                = params_lookup( 'log_file' )
+  $log_file                = params_lookup( 'log_file' ),
+  $enablepnp               = params_lookup( 'enablepnp', 'global' ),
+  $template_cgi            = params_lookup( 'template_cgi', 'global' ),
+  $settings_template       = params_lookup( 'settings_template', 'global' ),
+  $settings_timeperiods    = params_lookup( 'settings_timeperiods'),
+  $commands_general        = params_lookup( 'commands_general'),
+  $commands_extra          = params_lookup( 'commands_extra'),
+  $commands_special        = params_lookup( 'commands_special', 'global' )
   ) inherits nagios::params {
 
   $bool_install_prerequisites = any2bool($install_prerequisites)
@@ -288,7 +305,7 @@ class nagios (
   $bool_puppi=any2bool($puppi)
   $bool_debug=any2bool($debug)
   $bool_audit_only=any2bool($audit_only)
-  $bool_manual_dir_purge=any2bool($manual_dir_purge)
+  $bool_enablepnp=any2bool($enablepnp)
   $customconfigdir = "${config_dir}/auto.d"
 
   ### Definition of some variables used in the module
@@ -354,6 +371,22 @@ class nagios (
     default   => template($nagios::template),
   }
 
+  $manage_cgi_file_content = $nagios::template_cgi ? {
+    ''        => undef,
+    default   => template($nagios::template_cgi),
+  }
+
+  ### Check if we're using pnp4nagios
+  #if $nagios::bool_enablepnp {
+    #$template = 'pnp4nagios/nagios/nagios.cfg.erb'
+    #$template_cgi = 'pnp4nagios/nagios/cgi.cfg'
+    #$settings_template = 'pnp4nagios/nagios/settings/templates.cfg'
+    #$commands_special = 'pnp4nagios/nagios/commands/special.cfg'
+    #$manage_cgi_file_content = $template_cgi ? {
+      #default => template($template_cgi),
+    #}
+  #}
+
   ### Managed resources
   package { 'nrpe-plugin':
     ensure => $nagios::manage_package,
@@ -386,6 +419,22 @@ class nagios (
     content => $nagios::manage_file_content,
     replace => $nagios::manage_file_replace,
     audit   => $nagios::manage_audit,
+  }
+
+  if $nagios::bool_enablepnp {
+    # Apply cgi.conf template
+    file { 'cgi.cfg':
+      ensure  => $nagios::manage_file,
+      path    => "${nagios::config_dir}/cgi.cfg",
+      mode    => $nagios::config_file_mode,
+      owner   => $nagios::config_file_owner,
+      group   => $nagios::config_file_group,
+      require => Package['nagios'],
+      notify  => $nagios::manage_service_autorestart,
+      content => $nagios::manage_cgi_file_content,
+      replace => $nagios::manage_file_replace,
+      audit   => $nagios::manage_audit,
+    }
   }
 
   # The whole nagios configuration directory can be recursively overriden

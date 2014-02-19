@@ -79,19 +79,6 @@ class nagios::skel {
     require => File['nagios_configdir'],
   }
 
-  file { 'nagios_configdir_manual':
-    ensure  => directory,
-    path    => "${nagios::customconfigdir}/manual",
-    mode    => '0755',
-    owner   => $nagios::config_file_owner,
-    group   => $nagios::config_file_group,
-    source  => $nagios::manual_dir_source,
-    recurse => true,
-    force   => $nagios::bool_manual_dir_purge,
-    purge   => $nagios::bool_manual_dir_purge,
-    require => File['nagios_configdir'],
-  }
-
   file { 'nagios_modulesdir':
     ensure  => directory,
     path    => "${nagios::config_dir}/modules",
@@ -109,7 +96,7 @@ class nagios::skel {
     owner   => $nagios::config_file_owner,
     group   => $nagios::config_file_group,
     require => File['nagios_configdir_commands'],
-    content => template('nagios/commands/general.cfg'),
+    content => template($nagios::commands_general),
   }
 
   file { 'nagios_commands_extra.cfg':
@@ -119,7 +106,7 @@ class nagios::skel {
     owner   => $nagios::config_file_owner,
     group   => $nagios::config_file_group,
     require => File['nagios_configdir_commands'],
-    content => template('nagios/commands/extra.cfg'),
+    content => template($nagios::commands_extra),
   }
 
   file { 'nagios_commands_special.cfg':
@@ -129,7 +116,7 @@ class nagios::skel {
     owner   => $nagios::config_file_owner,
     group   => $nagios::config_file_group,
     require => File['nagios_configdir_commands'],
-    content => template('nagios/commands/special.cfg'),
+    content => template($nagios::commands_special),
   }
 
   # Temporary removal of old default contact file
@@ -160,7 +147,7 @@ class nagios::skel {
     owner   => $nagios::config_file_owner,
     group   => $nagios::config_file_group,
     require => File['nagios_configdir_settings'],
-    content => template('nagios/settings/timeperiods.cfg'),
+    content => template($nagios::settings_timeperiods),
   }
 
   file { 'nagios_templates.cfg':
@@ -170,7 +157,7 @@ class nagios::skel {
     owner   => $nagios::config_file_owner,
     group   => $nagios::config_file_group,
     require => File['nagios_configdir_settings'],
-    content => template('nagios/settings/templates.cfg'),
+    content => template($nagios::settings_template),
   }
 
   file { 'nagios_hostgroup_all.cfg':

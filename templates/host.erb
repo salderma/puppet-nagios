@@ -9,4 +9,5 @@ define host{
 <% if ! (/^(none|)$/i =~ @host_parent) then -%>
     parents    <%= @host_parent %>
 <% end -%>
+    2d_coords  <%= @ipaddress.split(".")[2..3].collect{|x| x}.join(",") %>
 }
